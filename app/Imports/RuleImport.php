@@ -2,14 +2,26 @@
 
 namespace App\Imports;
 
-use Maatwebsite\Excel\Concerns\ToArray;
+use Illuminate\Support\Collection;
+use Maatwebsite\Excel\Concerns\ToCollection;
+use Maatwebsite\Excel\Concerns\WithHeadingRow;
 
-class RuleImport implements ToArray
+class RuleImport implements ToCollection, WithHeadingRow
 {
-    public function array(array $array)
+    public $data = [];
+
+    public function collection(Collection $rows)
     {
-        return $array;
+        foreach ($rows as $row) {
+            // Pastikan kolom sesuai Excel Anda
+            $this->data[] = [
+                'luas_lahan'    => $row['luas_lahan'],
+                'jenis_lahan'   => $row['jenis_lahan'],
+                'jenis_bibit'   => $row['jenis_bibit'],
+                'cuaca'         => $row['cuaca'],
+                'lama_bertani'  => $row['lama_bertani'],
+                'jenis_pupuk'   => $row['hasil_prediksi'], // mapping target
+            ];
+        }
     }
 }
-
-

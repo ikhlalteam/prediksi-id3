@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Prediksi;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Imports\RuleImport;
 
 class AdminController extends Controller
 {
@@ -27,47 +28,60 @@ class AdminController extends Controller
     }
 
     public function update(Request $request, $id)
-    {
-        $item = Prediksi::findOrFail($id);
+{
+    $item = Prediksi::findOrFail($id);
 
-        $hasil = $this->prediksiID3(
-            $request->jenis_bibit,
-            $request->cuaca,
-            $request->jenis_lahan
-        );
+    $hasil = $this->prediksiID3(
+        $request->jenis_bibit,
+        $request->cuaca,
+        $request->luas_lahan,
+        $request->jenis_lahan,
+        $request->lama_bertani
+    );
 
-        $item->update([
-            'luas_lahan' => $request->luas_lahan,
-            'jenis_lahan' => $request->jenis_lahan,
-            'jenis_bibit' => $request->jenis_bibit,
-            'cuaca' => $request->cuaca,
-            'lama_bertani' => $request->lama_bertani,
-            'hasil_prediksi' => $hasil,
-        ]);
+    $item->update([
+        'luas_lahan' => $request->luas_lahan,
+        'jenis_lahan' => $request->jenis_lahan,
+        'jenis_bibit' => $request->jenis_bibit,
+        'cuaca' => $request->cuaca,
+        'lama_bertani' => $request->lama_bertani,
+        'hasil_prediksi' => $hasil,
+    ]);
 
-        return redirect()->route('admin.dashboard')->with('success', 'Prediksi berhasil diperbarui.');
-    }
+    return redirect()->route('admin.dashboard')->with('success', 'Prediksi berhasil diperbarui.');
+}
 
-    private function prediksiID3($jenis_bibit, $cuaca, $jenis_lahan)
-    {
-        if ($jenis_bibit === 'Bagus') {
-            if ($cuaca === 'Hujan') {
-                return 'Tetap';
-            } elseif ($cuaca === 'Normal') {
-                return 'Naik atau Turun';
-            }
-        } elseif ($jenis_bibit === 'Sedang') {
-            return 'Naik';
-        } elseif ($jenis_bibit === 'Kurang') {
-            if ($jenis_lahan === 'Kering') {
-                return 'Tetap';
-            } elseif ($jenis_lahan === 'Pasir') {
+
+   private function prediksiID3($jenis_bibit, $cuaca, $luas_lahan, $jenis_lahan, $lama_bertani)
+{
+    if ($jenis_bibit === 'Bagus') {
+        if ($cuaca === 'Hujan') {
+            if ($luas_lahan === 'Luas' && $jenis_lahan === 'Kering' && $lama_bertani === 'Lama') {
                 return 'Turun';
+            } elseif ($luas_lahan === 'Sedang' && $jenis_lahan === 'Kering' && $lama_bertani === 'Sedang') {
+                return 'Tetap';
+            }
+        } elseif ($cuaca === 'Normal') {
+            if ($luas_lahan === 'Luas' && $jenis_lahan === 'Kering' && $lama_bertani === 'Baru') {
+                return 'Naik';
+            } elseif ($luas_lahan === 'Kecil' && $jenis_lahan === 'Kering' && $lama_bertani === 'Baru') {
+                return 'Naik';
             }
         }
-
-        return 'Tidak diketahui';
+    } elseif ($jenis_bibit === 'Sedang') {
+        if ($cuaca === 'Normal' && $luas_lahan === 'Luas' && $jenis_lahan === 'Kering' && $lama_bertani === 'Lama') {
+            return 'Naik'; 
+        }
+    } elseif ($jenis_bibit === 'Kurang') {
+        if ($cuaca === 'Hujan' && $luas_lahan === 'Sedang' && $jenis_lahan === 'Pasir' && $lama_bertani === 'Sedang') {
+            return 'Turun';
+        }
     }
+
+    return 'Tidak diketahui';
+}
+
+
 
     public function destroy($id)
     {
@@ -75,39 +89,40 @@ class AdminController extends Controller
         return redirect()->back()->with('success', 'Data berhasil dihapus');
     }
 
-    public function importId3(Request $request)
-    {
-        $request->validate([
-            'excel_file' => 'required|mimes:xlsx,xls'
-        ]);
+    
 
-        $data = Excel::toArray([], $request->file('excel_file'))[0];
+public function importRules(Request $request)
+{
+    $request->validate([
+        'file' => 'required|file|mimes:xlsx,xls,csv|max:20480',
+    ]);
 
-        $header = array_map('strtolower', $data[0]);
-        $rows = array_slice($data, 1);
+    try {
+        $import = new RuleImport;
+        Excel::import($import, $request->file('file'));
 
-        $dataset = [];
-        foreach ($rows as $row) {
-            $item = [];
-            foreach ($header as $i => $key) {
-                $item[$key] = $row[$i];
-            }
-            $dataset[] = $item;
+        $dataset = $import->data;
+
+        // dd($dataset); // gunakan ini untuk debug isi dataset
+
+        if (empty($dataset)) {
+            return back()->with('error', 'File kosong atau tidak dikenali.');
         }
 
-        $tree = $this->buildId3Tree($dataset, array_keys($dataset[0]), 'hasil_prediksi');
+        // Proses ID3 berdasarkan $dataset
+        $rules = $this->generateId3Rules($dataset); 
 
-        \DB::table('id3_rules')->updateOrInsert(
-            ['id' => 1],
-            ['rule' => json_encode($tree), 'updated_at' => now()]
-        );
+        return view('admin.rules.preview', compact('rules'));
 
-        return back()->with('success', 'Rules ID3 berhasil dibuat dan disimpan!');
+    } catch (\Exception $e) {
+        return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
     }
+}
+
 
     private function buildId3Tree($data, $attributes, $target)
     {
-        // Placeholder / fungsi ID3 buildTree bisa Anda sesuaikan sesuai kebutuhan
-        return []; // Untuk sementara return array kosong
+        
+        return []; 
     }
 }

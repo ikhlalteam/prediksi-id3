@@ -11,6 +11,12 @@ use App\Http\Controllers\RiwayatController;
 use App\Http\Controllers\UserPhotoController;
 use App\Http\Controllers\RuleController;
 
+use App\Http\Controllers\UserController;
+
+Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::resource('users', UserController::class);
+});
+
 
 // ⛔️ Logout
 Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])

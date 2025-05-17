@@ -27,7 +27,9 @@ class PrediksiController extends Controller
         $hasil = $this->prediksiID3(
             $validated['jenis_bibit'],
             $validated['cuaca'],
-            $validated['jenis_lahan']
+            $validated['luas_lahan'],
+            $validated['jenis_lahan'],
+            $validated['lama_bertani']
         );
 
         Prediksi::create([
@@ -43,24 +45,33 @@ class PrediksiController extends Controller
         return redirect()->back()->with('success', 'Prediksi berhasil disimpan!');
     }
 
-    private function prediksiID3($jenis_bibit, $cuaca, $jenis_lahan)
-    {
-        if ($jenis_bibit === 'Bagus') {
-            if ($cuaca === 'Hujan') {
-                return 'Tetap';
-            } elseif ($cuaca === 'Normal') {
-                return 'Naik atau Turun';
-            }
-        } elseif ($jenis_bibit === 'Sedang') {
-            return 'Naik';
-        } elseif ($jenis_bibit === 'Kurang') {
-            if ($jenis_lahan === 'Kering') {
-                return 'Tetap';
-            } elseif ($jenis_lahan === 'Pasir') {
+    private function prediksiID3($jenis_bibit, $cuaca, $luas_lahan, $jenis_lahan, $lama_bertani)
+{
+    if ($jenis_bibit === 'Bagus') {
+        if ($cuaca === 'Hujan') {
+            if ($luas_lahan === 'Luas' && $jenis_lahan === 'Kering' && $lama_bertani === 'Lama') {
                 return 'Turun';
+            } elseif ($luas_lahan === 'Sedang' && $jenis_lahan === 'Kering' && $lama_bertani === 'Sedang') {
+                return 'Tetap';
+            }
+        } elseif ($cuaca === 'Normal') {
+            if ($luas_lahan === 'Luas' && $jenis_lahan === 'Kering' && $lama_bertani === 'Baru') {
+                return 'Naik';
+            } elseif ($luas_lahan === 'Kecil' && $jenis_lahan === 'Kering' && $lama_bertani === 'Baru') {
+                return 'Naik';
             }
         }
-
-        return 'Tidak diketahui';
+    } elseif ($jenis_bibit === 'Sedang') {
+        if ($cuaca === 'Normal' && $luas_lahan === 'Luas' && $jenis_lahan === 'Kering' && $lama_bertani === 'Lama') {
+            return 'Naik'; 
+        }
+    } elseif ($jenis_bibit === 'Kurang') {
+        if ($cuaca === 'Hujan' && $luas_lahan === 'Sedang' && $jenis_lahan === 'Pasir' && $lama_bertani === 'Sedang') {
+            return 'Turun';
+        }
     }
+
+    return 'Tidak diketahui';
+}
+
 }
