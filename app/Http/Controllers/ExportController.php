@@ -12,4 +12,3 @@ class ExportController extends Controller
         return Excel::download(new PrediksiExport, 'hasil-prediksi.xlsx');
     }
 }
-

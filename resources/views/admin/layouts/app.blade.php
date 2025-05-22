@@ -40,6 +40,11 @@
                    class="flex items-center gap-2 hover:underline {{ request()->routeIs('admin.rules.upload') ? 'text-blue-600 font-bold' : '' }}">
                     <i data-lucide="file-up" class="w-5 h-5"></i> Perhitungan ID3 Rules Baru
                 </a>
+                
+                <a href="{{ route('admin.rules.result') }}"
+                   class="flex items-center gap-2 hover:underline {{ request()->routeIs('admin.rules.upload') ? 'text-blue-600 font-bold' : '' }}">
+                    <i data-lucide="file-up" class="w-5 h-5"></i> hasil Perhitungan ID3 Rules Baru
+                </a>
 
                 <a href="{{ route('admin.users.index') }}" class="flex items-center gap-2 hover:underline {{ request()->is('admin/users*') ? 'text-blue-600 font-bold' : '' }}">
                 <i data-lucide="users" class="w-5 h-5"></i> Manajemen Pengguna

@@ -4,103 +4,126 @@ namespace App\Services;
 
 class ID3Calculator
 {
-    protected $data;
-    protected $attributes;
+    private array $data;
+    private array $attributes;
+    private string $targetAttribute;
 
-    public function __construct(array $data)
+    public function __construct(array $data, array $attributes, string $targetAttribute)
     {
         $this->data = $data;
-        $this->attributes = array_keys($data[0]);
-        unset($this->attributes[array_search('hasil_prediksi', $this->attributes)]);
+        $this->attributes = $attributes;
+        $this->targetAttribute = $targetAttribute;
     }
 
     public function calculate(): array
     {
-        return $this->buildTree($this->data, $this->attributes);
+        $gainResults = [];
+        $totalEntropy = $this->entropy($this->data);
+
+        foreach ($this->attributes as $attribute) {
+            if ($attribute !== $this->targetAttribute) {
+                $gainResults[$attribute] = [
+                    'entropy' => $totalEntropy,
+                    'gain' => $this->gain($this->data, $attribute)
+                ];
+            }
+        }
+
+        $tree = $this->buildTree($this->data, $this->attributes);
+
+        return [
+            'tree' => $tree,
+            'gains' => $gainResults,
+        ];
     }
 
-    protected function buildTree(array $data, array $attributes)
+    private function entropy(array $subset): float
     {
-        $labels = array_column($data, 'hasil_prediksi');
+        $total = count($subset);
+        if ($total === 0) return 0;
+
+        $labelCounts = array_count_values(array_column($subset, $this->targetAttribute));
+        $entropy = 0.0;
+
+        foreach ($labelCounts as $count) {
+            $probability = $count / $total;
+            $entropy -= $probability * log($probability, 2);
+        }
+
+        return round($entropy, 4);
+    }
+
+    private function gain(array $subset, string $attribute): float
+    {
+        $total = count($subset);
+        $attributeValues = array_unique(array_column($subset, $attribute));
+        $weightedEntropy = 0.0;
+
+        foreach ($attributeValues as $value) {
+            $subsetValue = array_filter($subset, fn($row) => $row[$attribute] === $value);
+            $subsetCount = count($subsetValue);
+            $entropy = $this->entropy($subsetValue);
+            $weightedEntropy += ($subsetCount / $total) * $entropy;
+        }
+
+        $totalEntropy = $this->entropy($subset);
+        return round($totalEntropy - $weightedEntropy, 4);
+    }
+
+    private function buildTree(array $data, array $attributes): array
+    {
+        $labels = array_column($data, $this->targetAttribute);
+
+        // Basis 1: jika semua label sama
         if (count(array_unique($labels)) === 1) {
-            return $labels[0];
+            return ['label' => $labels[0]]; // FIX: return array, bukan string
         }
 
-        if (empty($attributes)) {
-            return $this->mostCommonLabel($labels);
+        // Basis 2: tidak ada atribut yang tersisa selain target
+        if (count($attributes) === 1) {
+            return ['label' => $this->majorityLabel($labels)]; // FIX
         }
 
-        $bestAttr = $this->chooseBestAttribute($data, $attributes);
-        $tree = [$bestAttr => []];
+        // Hitung gain setiap atribut
+        $gains = [];
+        foreach ($attributes as $attribute) {
+            if ($attribute !== $this->targetAttribute) {
+                $gains[$attribute] = $this->gain($data, $attribute);
+            }
+        }
 
-        foreach ($this->getUniqueValues($data, $bestAttr) as $val) {
-            $subset = array_filter($data, fn($row) => $row[$bestAttr] == $val);
+        // Pilih atribut terbaik
+        arsort($gains);
+        $bestAttribute = array_key_first($gains);
+        $tree = [$bestAttribute => []];
+
+        foreach (array_unique(array_column($data, $bestAttribute)) as $value) {
+            $subset = array_filter($data, fn($row) => $row[$bestAttribute] === $value);
+            $subset = array_values($subset);
+
             if (empty($subset)) {
-                $tree[$bestAttr][$val] = $this->mostCommonLabel($labels);
+                $tree[$bestAttribute][$value] = ['label' => $this->majorityLabel($labels)];
             } else {
-                $remainingAttrs = array_diff($attributes, [$bestAttr]);
-                $tree[$bestAttr][$val] = $this->buildTree(array_values($subset), $remainingAttrs);
+                $remainingAttributes = array_filter($attributes, fn($attr) => $attr !== $bestAttribute);
+                $tree[$bestAttribute][$value] = $this->buildTree($subset, $remainingAttributes);
             }
         }
 
         return $tree;
     }
 
-    protected function chooseBestAttribute(array $data, array $attributes)
-    {
-        $baseEntropy = $this->entropy(array_column($data, 'hasil_prediksi'));
-        $bestGain = -INF;
-        $bestAttr = null;
+    
 
-        foreach ($attributes as $attr) {
-            $gain = $this->informationGain($data, $attr, $baseEntropy);
-            if ($gain > $bestGain) {
-                $bestGain = $gain;
-                $bestAttr = $attr;
-            }
-        }
-
-        return $bestAttr;
-    }
-
-    protected function entropy(array $labels)
-    {
-        $total = count($labels);
-        $counts = array_count_values($labels);
-        $entropy = 0.0;
-
-        foreach ($counts as $count) {
-            $p = $count / $total;
-            $entropy -= $p * log($p, 2);
-        }
-
-        return $entropy;
-    }
-
-    protected function informationGain(array $data, string $attribute, float $baseEntropy)
-    {
-        $values = $this->getUniqueValues($data, $attribute);
-        $subsetEntropy = 0.0;
-
-        foreach ($values as $value) {
-            $subset = array_filter($data, fn($row) => $row[$attribute] == $value);
-            $p = count($subset) / count($data);
-            $subsetLabels = array_column($subset, 'hasil_prediksi');
-            $subsetEntropy += $p * $this->entropy($subsetLabels);
-        }
-
-        return $baseEntropy - $subsetEntropy;
-    }
-
-    protected function mostCommonLabel(array $labels)
+    private function majorityLabel(array $labels): string
     {
         $counts = array_count_values($labels);
         arsort($counts);
         return array_key_first($counts);
     }
 
-    protected function getUniqueValues(array $data, string $attribute): array
-    {
-        return array_values(array_unique(array_column($data, $attribute)));
-    }
+    public $gains = []; // untuk menyimpan gain per atribut
+
+
+
+
 }

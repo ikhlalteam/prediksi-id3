@@ -71,7 +71,7 @@ class PrediksiController extends Controller
         }
     }
 
-    return 'Tidak diketahui';
+    return 'Tetap';
 }
 
 }

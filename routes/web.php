@@ -66,6 +66,18 @@ Route::middleware(['auth'])->group(function () {
 });
 
 
+Route::prefix('admin/rules')->middleware(['auth', 'is_admin'])->group(function () {
+    Route::get('/upload', [RuleController::class, 'uploadForm'])->name('admin.rules.upload');
+    Route::post('/upload', [RuleController::class, 'upload']);
+    Route::post('/confirm', [RuleController::class, 'confirmUpdate'])->name('admin.rules.confirm');
+    Route::post('/admin/rules/result', [RuleController::class, 'upload'])->name('admin.rules.result');
+    Route::post('/admin/rules/save-history', [RuleController::class, 'saveToHistory'])->name('admin.rules.saveToHistory');
+    Route::post('/admin/rules/save-history', [RuleController::class, 'saveHistory'])->name('admin.rules.saveHistory');
+
+
+
+});
+
 
 
 // 🧩 Auth routes dari Breeze

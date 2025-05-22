@@ -78,7 +78,7 @@ class AdminController extends Controller
         }
     }
 
-    return 'Tidak diketahui';
+    return 'Tetap';
 }
 
 
