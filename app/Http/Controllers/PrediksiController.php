@@ -46,32 +46,33 @@ class PrediksiController extends Controller
     }
 
     private function prediksiID3($jenis_bibit, $cuaca, $luas_lahan, $jenis_lahan, $lama_bertani)
-{
-    if ($jenis_bibit === 'Bagus') {
-        if ($cuaca === 'Hujan') {
-            if ($luas_lahan === 'Luas' && $jenis_lahan === 'Kering' && $lama_bertani === 'Lama') {
-                return 'Turun';
-            } elseif ($luas_lahan === 'Sedang' && $jenis_lahan === 'Kering' && $lama_bertani === 'Sedang') {
-                return 'Tetap';
+    {
+        if ($jenis_bibit === 'Bagus') {
+            if ($cuaca === 'Hujan') {
+                if ($luas_lahan === 'Luas' && $jenis_lahan === 'Kering' && $lama_bertani === 'Lama') {
+                    return '1 urea, 2 phoska';
+                } elseif ($luas_lahan === 'Sedang' && $jenis_lahan === 'Kering' && $lama_bertani === 'Sedang') {
+                    return '2 urea, 2 phoska';
+                }
+            } elseif ($cuaca === 'Normal') {
+                if ($luas_lahan === 'Luas' && $jenis_lahan === 'Kering' && $lama_bertani === 'Baru') {
+                    return '4 urea, 3 phoska';
+                } elseif ($luas_lahan === 'Kecil' && $jenis_lahan === 'Kering' && $lama_bertani === 'Baru') {
+                    return '4 urea, 3 phoska';
+                }
             }
-        } elseif ($cuaca === 'Normal') {
-            if ($luas_lahan === 'Luas' && $jenis_lahan === 'Kering' && $lama_bertani === 'Baru') {
-                return 'Naik';
-            } elseif ($luas_lahan === 'Kecil' && $jenis_lahan === 'Kering' && $lama_bertani === 'Baru') {
-                return 'Naik';
+        } elseif ($jenis_bibit === 'Sedang') {
+            if ($cuaca === 'Normal' && $luas_lahan === 'Luas' && $jenis_lahan === 'Kering' && $lama_bertani === 'Lama') {
+                return '4 urea, 3 phoska';
+            }
+        } elseif ($jenis_bibit === 'Kurang') {
+            if ($cuaca === 'Hujan' && $luas_lahan === 'Sedang' && $jenis_lahan === 'Pasir' && $lama_bertani === 'Sedang') {
+                return '1 urea, 1 phoska';
             }
         }
-    } elseif ($jenis_bibit === 'Sedang') {
-        if ($cuaca === 'Normal' && $luas_lahan === 'Luas' && $jenis_lahan === 'Kering' && $lama_bertani === 'Lama') {
-            return 'Naik'; 
-        }
-    } elseif ($jenis_bibit === 'Kurang') {
-        if ($cuaca === 'Hujan' && $luas_lahan === 'Sedang' && $jenis_lahan === 'Pasir' && $lama_bertani === 'Sedang') {
-            return 'Turun';
-        }
+
+        return '2 urea, 2 phoska'; 
     }
 
-    return 'Tetap';
-}
 
 }

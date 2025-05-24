@@ -79,6 +79,5 @@ Route::prefix('admin/rules')->middleware(['auth', 'is_admin'])->group(function (
 });
 
 
-
 // 🧩 Auth routes dari Breeze
 require __DIR__.'/auth.php';

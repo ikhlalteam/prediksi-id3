@@ -11,24 +11,28 @@
             $entropyGain = json_decode($history->entropy_gain, true);
         @endphp
 
-        <table class="w-full text-sm mt-2 border border-gray-200">
-            <thead class="bg-gray-100">
-                <tr>
-                    <th class="border px-2 py-1">Atribut</th>
-                    <th class="border px-2 py-1">Entropy</th>
-                    <th class="border px-2 py-1">Gain</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach ($entropyGain as $attribute => $values)
-                <tr>
-                    <td class="border px-2 py-1">{{ $attribute }}</td>
-                    <td class="border px-2 py-1">{{ $values['entropy'] }}</td>
-                    <td class="border px-2 py-1">{{ $values['gain'] }}</td>
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
+        @if (is_array($entropyGain))
+            <table class="w-full text-sm mt-2 border border-gray-200">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th class="border px-2 py-1">Atribut</th>
+                        <th class="border px-2 py-1">Entropy</th>
+                        <th class="border px-2 py-1">Gain</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach ($entropyGain as $attribute => $values)
+                    <tr>
+                        <td class="border px-2 py-1">{{ $attribute }}</td>
+                        <td class="border px-2 py-1">{{ $values['entropy'] ?? '-' }}</td>
+                        <td class="border px-2 py-1">{{ $values['gain'] ?? '-' }}</td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        @else
+            <p class="text-red-500 mt-2">Format data entropy tidak valid atau kosong.</p>
+        @endif
     </div>
 @endforeach
 
