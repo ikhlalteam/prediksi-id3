@@ -50,7 +50,7 @@ class PrediksiController extends Controller
         if ($jenis_bibit === 'Bagus') {
             if ($cuaca === 'Hujan') {
                 if ($luas_lahan === 'Luas' && $jenis_lahan === 'Kering' && $lama_bertani === 'Lama') {
-                    return '1 urea, 2 phoska';
+                    return '1 urea, 1 phoska';
                 } elseif ($luas_lahan === 'Sedang' && $jenis_lahan === 'Kering' && $lama_bertani === 'Sedang') {
                     return '2 urea, 2 phoska';
                 }

@@ -55,13 +55,10 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [PrediksiController::class, 'index'])->name('dashboard');
     Route::post('/prediksi', [PrediksiController::class, 'store'])->name('prediksi.store');
-
     Route::get('/riwayat', [RiwayatController::class, 'index'])->name('riwayat.index');
-
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-
     Route::post('/profile/photo', [UserPhotoController::class, 'update'])->name('profile.photo.update');
 });
 
@@ -76,6 +73,14 @@ Route::prefix('admin/rules')->middleware(['auth', 'is_admin'])->group(function (
 
 
 
+});
+
+Route::prefix('admin')->middleware(['auth'])->group(function () {
+    Route::get('/riwayat-prediksi', [RiwayatController::class, 'history'])->name('admin.rules.index');
+    Route::post('/riwayat-prediksi/preview', [RiwayatController::class, 'previewRule'])->name('admin.rules.preview');
+    Route::post('/riwayat-prediksi/confirm', [RiwayatController::class, 'confirmRule'])->name('admin.rules.confirm');
+    Route::post('/riwayat-prediksi/cancel', [RiwayatController::class, 'cancelRule'])->name('admin.rules.cancel');
+    Route::delete('/riwayat-prediksi/{id}', [RiwayatController::class, 'deleteHistory'])->name('admin.rules.delete');
 });
 
 

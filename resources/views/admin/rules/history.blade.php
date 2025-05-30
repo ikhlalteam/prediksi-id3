@@ -4,6 +4,7 @@
 <h2 class="text-xl font-bold mb-4">Riwayat Perhitungan ID3</h2>
 
 @foreach($histories as $history)
+
     <div class="bg-white p-4 shadow mb-4 rounded">
         <h4 class="text-lg font-bold">Perhitungan pada {{ \Carbon\Carbon::parse($history->created_at)->format('d M Y H:i') }}</h4>
 
@@ -31,10 +32,25 @@
                 </tbody>
             </table>
         @else
-            <p class="text-red-500 mt-2">Format data entropy tidak valid atau kosong.</p>
+            
         @endif
+
+        {{-- Tombol Aksi --}}
+        <div class="flex mt-4 gap-2">
+            <form action="{{ route('admin.rules.preview') }}" method="POST">
+                @csrf
+                <input type="hidden" name="id" value="{{ $history->id }}">
+                <button class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">Lihat pohon id3 </button>
+            </form>
+
+            <form action="{{ route('admin.rules.delete', $history->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus riwayat ini?')">
+                @csrf
+                @method('DELETE')
+                <button class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">Hapus</button>
+            </form>
+        </div>
     </div>
 @endforeach
-
 @endsection
+
 

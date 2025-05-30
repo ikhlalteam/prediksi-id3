@@ -10,7 +10,9 @@
 <form action="{{ route('admin.rules.upload') }}" method="POST" enctype="multipart/form-data">
     @csrf
      <input type="file" name="excel_file" required>
-    <button type="submit">Upload</button>
+    <button type="submit" class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-green-600">
+            lakukan perhitungan
+        </button>
 </form>
 
 
