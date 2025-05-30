@@ -5,7 +5,7 @@
 
 @foreach($histories as $history)
     <div class="bg-white p-4 shadow mb-4 rounded">
-        <h4 class="text-lg font-bold">Perhitungan pada {{ $history->created_at->format('d M Y H:i') }}</h4>
+        <h4 class="text-lg font-bold">Perhitungan pada {{ \Carbon\Carbon::parse($history->created_at)->format('d M Y H:i') }}</h4>
 
         @php
             $entropyGain = json_decode($history->entropy_gain, true);
@@ -22,11 +22,11 @@
                 </thead>
                 <tbody>
                     @foreach ($entropyGain as $attribute => $values)
-                    <tr>
-                        <td class="border px-2 py-1">{{ $attribute }}</td>
-                        <td class="border px-2 py-1">{{ $values['entropy'] ?? '-' }}</td>
-                        <td class="border px-2 py-1">{{ $values['gain'] ?? '-' }}</td>
-                    </tr>
+                        <tr>
+                            <td class="border px-2 py-1">{{ $attribute }}</td>
+                            <td class="border px-2 py-1">{{ $values['entropy'] ?? '-' }}</td>
+                            <td class="border px-2 py-1">{{ $values['gain'] ?? '-' }}</td>
+                        </tr>
                     @endforeach
                 </tbody>
             </table>
@@ -37,3 +37,4 @@
 @endforeach
 
 @endsection
+

@@ -51,7 +51,6 @@ class AdminController extends Controller
         return redirect()->route('admin.dashboard')->with('success', 'Prediksi berhasil diperbarui.');
     }
 
-    
     private function prediksiID3($jenis_bibit, $cuaca, $luas_lahan, $jenis_lahan, $lama_bertani)
     {
         if ($jenis_bibit === 'Bagus') {
@@ -78,7 +77,7 @@ class AdminController extends Controller
             }
         }
 
-        return '2 urea, 2 phoska'; 
+        return '2 urea, 2 phoska';
     }
 
     public function destroy($id)
@@ -100,21 +99,26 @@ class AdminController extends Controller
             $dataset = $import->data;
 
             if (empty($dataset)) {
-                return back()->with('error', 'File kosong atau tidak dikenali.');
+                return back()->with('error', 'Data Excel kosong atau format salah.');
             }
 
-            // Proses ID3 berdasarkan $dataset
+            
             $rules = $this->generateId3Rules($dataset); 
 
             return view('admin.rules.preview', compact('rules'));
 
         } catch (\Exception $e) {
-            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+            return back()->with('error', 'Terjadi kesalahan saat upload: ' . $e->getMessage());
         }
     }
 
-    private function buildId3Tree($data, $attributes, $target)
+    
+    private function generateId3Rules(array $dataset)
     {
-        return []; 
+        
+        return [
+            'Aturan ID3 belum dihitung. Ini hanya contoh.',
+            'Total data: ' . count($dataset),
+        ];
     }
 }

@@ -14,13 +14,15 @@ class RuleImport implements OnEachRow, WithHeadingRow
     {
         $rowData = $row->toArray();
 
-        $luasLahan = $rowData['luas lahan'] ?? null;
-        $jenisLahan = $rowData['jenis lahan'] ?? null;
-        $jenisBibit = $rowData['jenis bibit'] ?? null;
+        // Sesuaikan nama kolom dengan format heading Laravel Excel (lowercase + underscore)
+        $luasLahan = $rowData['luas_lahan'] ?? null;
+        $jenisLahan = $rowData['jenis_lahan'] ?? null;
+        $jenisBibit = $rowData['jenis_bibit'] ?? null;
         $cuaca = $rowData['cuaca'] ?? null;
-        $lamaBertani = $rowData['lama bertani'] ?? null;
-        $jenisPupuk = $rowData['hasil prediksi'] ?? null;
+        $lamaBertani = $rowData['lama_bertani'] ?? null;
+        $jenisPupuk = $rowData['hasil_prediksi'] ?? null;
 
+        // Simpan hanya jika semua data tersedia
         if ($luasLahan && $jenisLahan && $jenisBibit && $cuaca && $lamaBertani && $jenisPupuk) {
             $this->data[] = [
                 'Luas Lahan' => trim($luasLahan),
@@ -32,4 +34,11 @@ class RuleImport implements OnEachRow, WithHeadingRow
             ];
         }
     }
+
+    // Getter untuk mengambil data dari luar
+    public function getData(): array
+    {
+        return $this->data;
+    }
 }
+
